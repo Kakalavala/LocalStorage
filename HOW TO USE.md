@@ -25,7 +25,7 @@ SiteA.Username = "ExampleName"
 ```
 
 ### Getting Data
-Now that you can store data, retrieving it is just as important. You may retrieve any LocalStorage data you wish, as long as you know the prefix.
+Now that you can store data, retrieving it is just as important. You may retrieve any LocalStorage data you wish, as long as you know the prefix and dataName.
 
 **getData(prefix, dataName)** will return the stored data, and will automatically convert the type to String, Boolean, or Number, based on its value.
 
