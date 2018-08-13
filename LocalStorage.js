@@ -151,7 +151,7 @@ function listData(){
 	var vals = Object.values(localStorage);
 	var ret = "\n";
 
-	for (var i = 0; i < totalStorage; i += 1)
+	for (let i = 0; i < totalStorage; i += 1)
 		ret += (keys[i] + " = " + vals[i] + "\n");
 
 	return (ret + "\n");
@@ -167,7 +167,7 @@ function listDataByPrefix(prefix){
 		var vals = Object.values(localStorage);
 		var ret = "\n";
 
-		for (var i = 0; i < keys.length; i += 1)
+		for (let i = 0; i < keys.length; i += 1)
 			if (keys[i].includes(prefix)) ret += (keys[i] + " = " + vals[i] + "\n");
 
 		return (ret + "\n");
@@ -180,7 +180,7 @@ function listKeys() {
 	var keys = Object.keys(localStorage);
 	var ret = [];
 
-	for (var i = 0; i < totalStorage; i += 1)
+	for (let i = 0; i < totalStorage; i += 1)
 		ret.push(keys[i]);
 
 	return ret;
@@ -192,7 +192,7 @@ function listValues() {
 	var vals = Object.values(localStorage);
 	var ret = [];
 
-	for (var i = 0; i < totalStorage; i += 1)
+	for (let i = 0; i < totalStorage; i += 1)
 		ret.push(vals[i]);
 
 	return ret;
@@ -207,7 +207,7 @@ function listKeysByPrefix(prefix) {
 		var keys = Object.keys(localStorage);
 		var ret = [];
 
-		for (var i = 0; i < keys.length; i += 1)
+		for (let i = 0; i < keys.length; i += 1)
 			if (keys[i].includes(prefix)) ret.push(keys[i]);
 
 		return ret;
@@ -237,7 +237,7 @@ function listPrefixes() {
 	var keys = Object.keys(localStorage);
 	var pfx = [], pr;
 
-	for (var i = 0; i < totalStorage; i += 1) {
+	for (let i = 0; i < totalStorage; i += 1) {
 		pr = keys[i].substring(0, keys[i].indexOf("."));
 
 		if (!pfx.includes(pr)) pfx.push(pr);
@@ -252,7 +252,7 @@ function listStringPrefixes() {
 	var keys = Object.keys(localStorage);
 	var pfx = [], pr;
 
-	for (var i = 0; i < totalStorage; i += 1) {
+	for (let i = 0; i < totalStorage; i += 1) {
 		pr = keys[i].substring(0, keys[i].indexOf("."));
 
 		if (!pfx.includes(pr)) pfx.push(pr);
@@ -260,7 +260,7 @@ function listStringPrefixes() {
 
 	pr = "\n";
 
-	for (var i = 0; i < pfx.length; i += 1)
+	for (let i = 0; i < pfx.length; i += 1)
 		pr += pfx[i] + "\n";
 
 	return pr + "\n";
@@ -274,7 +274,7 @@ function getTotalByPrefix(prefix) {
 		var keys = Object.keys(localStorage);
 		var cnt = 0;
 
-		for(var i = 0; i < keys.length; i += 1)
+		for(let i = 0; i < keys.length; i += 1)
 			if(keys[i].includes(prefix)) cnt += 1;
 
 		return cnt;
@@ -316,7 +316,7 @@ function purgeDataByPrefix(prefix, _isSure) {
 
 				console.log(msg);
 
-				for (var i = 0; i < keys.length; i += 1) {
+				for (let i = 0; i < keys.length; i += 1) {
 					dataName = keys[i];
 
 					if(dataName.startsWith(prefix)) {
@@ -377,7 +377,7 @@ function getSizeByPrefix(prefix, asNum) {
 			}
 		}
 
-		for (var i = 0; i < _sums.length; i += 1)
+		for (let i = 0; i < _sums.length; i += 1)
 			_sum += Number.parseFloat(_sums[i]);
 
 		return (asNum) ? Number.parseFloat(_sum.toFixed(2)) : _sum.toFixed(2) + " KB";
@@ -385,14 +385,14 @@ function getSizeByPrefix(prefix, asNum) {
 }
 
 function _$createTestStorage(n) {
-	var pf = "LS_TEST", _s = 0, _cur = Number.parseInt(listValuesByPrefix(pf)[listValuesByPrefix(pf).length - 1]);
+	var _s = 0, _cur = Number.parseInt(listValuesByPrefix(pf)[listValuesByPrefix(pf).length - 1]);
 
 	if (n == undefined || n < 0) n = 30;
 	if (n > 400) n = 400;
 	if (isNaN(_cur)) _cur = 0;
 
-	for (var i = 1; i < n + 1; i += 1) {
-		storeData(pf, "TEST-" + (_cur + 1), _cur);
+	for (let i = 1; i < n + 1; i += 1) {
+		storeData("LS_TEST", "TEST-" + (_cur + 1), _cur);
 
 		_cur += 1;
 		_s += 1;
@@ -402,6 +402,5 @@ function _$createTestStorage(n) {
 }
 
 function _$purgeTestStorage(_b) {
-	var pf = "LS_TEST";
-	purgeDataByPrefix(pf, _b);
+	purgeDataByPrefix("LS_TEST", _b);
 }
