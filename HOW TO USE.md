@@ -58,6 +58,7 @@ dataExists(prefix, "Username"); // Returns true as the data, "Username", exists.
 
 ### Removing Data
 Storing data is useful, but so is removing data.
+
 **removeData(prefix, dataName)** will remove the data if it exists.
 ```
 var prefix = "SiteA";
