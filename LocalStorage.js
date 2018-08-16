@@ -1,406 +1,250 @@
-// Local Storage [v3.0.1]
-var _lsVersion = "3.0.1";
+// Local Storage v4.0.0
+// Written by Kakalavala
 
-/** CHANGELOG [V3.0.1] **/
-// + Added _$getSizes(asNum, putKB) method (to replace _getSizes(asNum, disLog))
-// * _getSizes() to be deprecated.
-
-/** CHANGELOG [v3.0.0] **/
-// + Added maxStorage variable
-// + Added _lsVersion variable
-// * Made it so totalStorage is set onload, without affecting window.onload methods
-// * Renamed isSupported() and verify() to support engine-naming scheme (_)
-// + Added new prototype ._trimSpace()
-// + Added new methods _setTotalStorage(), listKeys(), listValues(), listKeysByPrefix(),
-//	   listValuesByPrefix(), listPrefixes(), listStringPrefixes(), getSizeByPrefix(), and _getLSVersion()
-// + Added new Test Methods (_$)
-// * Moved all debug_ methods out of the debug stage of development
-// * Renamed Clear methods to Purge [purgeData() and purgeDataByPrefix()]
-// * Allowed for getSize() and getSizeByPrefix() to toggle between Number and String [getSize(_asNum) | true = Number]
-
+/**
+ * Current version of the LocalStorage API.
+ * @const {string}
+ */
+const _lsVersion = "4.0.0";
+/**
+ * The maximum storage of LocalStorage in Kilobytes.
+ * 10MB is the maximum imposed by Chrome, Firefox, and Opera.
+ * @const {number}
+ */
+const maxStorage = 10000;
+/**
+ * The current total size of LocalStorage.
+ * Cannot be set by the user. Automatically set by the API.
+ */
 var totalStorage = 0;
-var maxStorage = 10000;
 
-document.addEventListener('DOMContentLoaded', function() {
-	_setTotalStorage();
-}, false);
-
-function _isSupported() {
-	if (typeof(Storage) !== "undefined") {
-		_setTotalStorage();
-		return true;
-	} else {
+(function() {
+	if (typeof(Storage) !== "undefined")
+		setInterval(function() {
+			totalStorage = localStorage.length;
+		}, 200);
+	else {
 		console.error("Local Storage is not supported on your browser!");
 		return false;
 	}
-}
+}());
 
-function _setTotalStorage() {
-	totalStorage = localStorage.length;
-}
-
-function _getLSVersion() {
-	return _lsVersion;
-}
-
-function _verify(txt) {
-	return ((txt != undefined || txt != null) && txt.trim().length > 0 && typeof(txt) === "string");
-}
-
-String.prototype._trimSpace = function() {
+/**
+ * Replaces all spaces with underscores.
+ * @return {string}
+ */
+String.prototype._fix = function() {
 	return this.split(' ').join('_');
 };
 
+/**
+ * Ensures inputted Object is a valid and usable String.
+ * @param {string} nm
+ * @return {boolean}
+ */
+function _verify(nm) {
+	return (typeof(nm) === "string" && nm.trim().length > 0);
+}
+
+/**
+ * Stores data into the Local Storage under the name "<prefix>.<dataName>".
+ * @param {string} prefix
+ * @param {string} dataName
+ * @param {Object} data
+ */
 function storeData(prefix, dataName, data) {
-	if (!_isSupported()) return null;
+	if (_verify(prefix) && _verify(dataName)) {
+		prefix = prefix._fix() + ".";
+		dataName = dataName._fix();
 
-	if (_verify(prefix)) {
-		prefix += ".";
-
-		if (_verify(dataName)) {
-			dataName = dataName._trimSpace();
-			localStorage.setItem((prefix + dataName), data);
-			_setTotalStorage();
-		}
+		localStorage.setItem(prefix + dataName, data);
 	}
 }
 
-function storeDataAsArray(prefix, dataName, data) {
-	if (!_isSupported()) return null;
-
-	if (_verify(prefix)) {
-		prefix += ".";
-
-		if (_verify(dataName)) {
-			dataName = dataName._trimSpace();
-			localStorage.setItem((prefix + dataName), String(data).split(","));
-			_setTotalStorage();
-		}
-	}
-}
-
+/**
+ * Removes data from Local Storage.
+ * @param {string} prefix
+ * @param {string} dataName
+ */
 function removeData(prefix, dataName) {
-	if (!_isSupported()) return null;
+	if (_verify(prefix) && _verify(dataName)) {
+		prefix = prefix._fix() + ".";
+		dataName = dataName._fix();
 
-	if (_verify(prefix)) {
-		prefix += ".";
-
-		if (_verify(dataName)) {
-			dataName = dataName._trimSpace();
-			localStorage.removeItem((prefix + dataName));
-			_setTotalStorage();
-		}
+		localStorage.removeItem(prefix + dataName);
 	}
 }
 
-function getData(prefix, dataName) {
-	if (!_isSupported()) return null;
-
-	if (_verify(prefix)) {
-		var item;
-		prefix += ".";
-
-		if (_verify(dataName)) {
-			dataName = dataName._trimSpace();
-			item = localStorage.getItem((prefix + dataName));
-
-			if (item != null || item != undefined) {
-				if (item.toLowerCase() == "true" || item.toLowerCase() == "false")
-					return (item.toLowerCase() == "true") ? true : false;
-				else if (!isNaN(item)) return Number(item);
-				else return item;
-			} else return null;
-		}
-	}
-}
-
-function getDataAsArray(prefix, dataName) {
-	if (!_isSupported()) return null;
-
-	if (_verify(prefix)) {
-		var item;
-		prefix += ".";
-
-		if (_verify(dataName)) {
-			dataName = dataName._trimSpace();
-			item = localStorage.getItem((prefix + dataName));
-
-			if (item != null || item != undefined) return String(item).split(",");
-			else return null;
-		}
-	}
-}
-
+/**
+ * Checks if data exists; returns true if exists, otherwise false.
+ * @param {string} prefix
+ * @param {string} dataName
+ */
 function dataExists(prefix, dataName) {
-	if (!_isSupported()) return null;
+	if (_verify(prefix) && _verify(dataName)) {
+		prefix = prefix._fix() + ".";
+		dataName = dataName._fix();
 
-	if (_verify(prefix)) {
-		prefix += ".";
+		return (localStorage.getItem(prefix + dataName) != null);
+	}
+}
 
-		if (_verify(dataName)) {
-			dataName = dataName._trimSpace();
-			return (localStorage.getItem((prefix + dataName)) != null);
+/**
+ * Get data from local storage if it exists.
+ * @param {string} prefix
+ * @param {string} dataName
+ * @param {boolean=} asArray
+ */
+function getData(prefix, dataName, asArray) {
+	if (_verify(prefix) && _verify(dataName)) {
+		let item = null;
+		let _item = null;
+
+		prefix = prefix._fix() + ".";
+		dataName = dataName._fix();
+		item = localStorage.getItem(prefix + dataName);
+
+		if (item != null) {
+			_item = item.toLowerCase();
+
+			if (asArray)
+				return item.split(",");
+
+			switch (_item) {
+				case "true":
+					return true;
+				case "false":
+					return false;
+				case "null":
+					return null;
+				case "undefined":
+					return undefined;
+				case "nan":
+					return NaN;
+			}
+
+			if (!isNaN(item))
+				return Number(item);
+			else return item;
 		}
 	}
 }
 
-function listData(){
-	if (!_isSupported()) return null;
-
-	var keys = Object.keys(localStorage);
-	var vals = Object.values(localStorage);
-	var ret = "\n";
-
-	for (let i = 0; i < totalStorage; i += 1)
-		ret += (keys[i] + " = " + vals[i] + "\n");
-
-	return (ret + "\n");
-}
-
-function listDataByPrefix(prefix){
-	if (!_isSupported()) return null;
-
+/**
+ * Lists all data stored to a prefix.
+ * Returns array of data.
+ * @param {string} prefix
+ * @return {Object}
+ */
+function getAllData(prefix) {
 	if (_verify(prefix)) {
-		prefix += ".";
+		let allData = [];
+		let keys = Object.keys(localStorage);
+		let vals = Object.values(localStorage);
 
-		var keys = Object.keys(localStorage);
-		var vals = Object.values(localStorage);
-		var ret = "\n";
+		prefix = prefix._fix() + ".";
 
-		for (let i = 0; i < keys.length; i += 1)
-			if (keys[i].includes(prefix)) ret += (keys[i] + " = " + vals[i] + "\n");
+		for (let i = 0; i < keys.length; i += 1) {
+			if (keys[i].startsWith(prefix))
+				allData.push([keys[i], vals[i]]);
+		}
 
-		return (ret + "\n");
+		return allData;
 	}
 }
 
-function listKeys() {
-	if (!_isSupported()) return null;
+/**
+ * Gets all prefixes.
+ * Returns array of Strings.
+ * @return {Object}
+ */
+function getPrefixes() {
+	let keys = Object.keys(localStorage);
+	let pfx = [], _pr = null;
 
-	var keys = Object.keys(localStorage);
-	var ret = [];
+	for (let i = 0; i < keys.length; i += 1) {
+		_pr = keys[i].substr(0, keys[i].indexOf("."));
 
-	for (let i = 0; i < totalStorage; i += 1)
-		ret.push(keys[i]);
-
-	return ret;
-}
-
-function listValues() {
-	if (!_isSupported()) return null;
-
-	var vals = Object.values(localStorage);
-	var ret = [];
-
-	for (let i = 0; i < totalStorage; i += 1)
-		ret.push(vals[i]);
-
-	return ret;
-}
-
-function listKeysByPrefix(prefix) {
-	if (!_isSupported()) return null;
-
-	if (_verify(prefix)) {
-		prefix += ".";
-
-		var keys = Object.keys(localStorage);
-		var ret = [];
-
-		for (let i = 0; i < keys.length; i += 1)
-			if (keys[i].includes(prefix)) ret.push(keys[i]);
-
-		return ret;
-	}
-}
-
-function listValuesByPrefix(prefix) {
-	if (!_isSupported()) return null;
-
-	if (_verify(prefix)) {
-		prefix += ".";
-
-		var keys = Object.keys(localStorage);
-		var vals = Object.values(localStorage);
-		var ret = [];
-
-		for (var i = 0; i < vals.length; i += 1)
-			if (keys[i].includes(prefix)) ret.push(vals[i]);
-
-		return ret;
-	}
-}
-
-function listPrefixes() {
-	if (!_isSupported()) return null;
-
-	var keys = Object.keys(localStorage);
-	var pfx = [], pr;
-
-	for (let i = 0; i < totalStorage; i += 1) {
-		pr = keys[i].substring(0, keys[i].indexOf("."));
-
-		if (!pfx.includes(pr)) pfx.push(pr);
+		if (!pfx.includes(_pr))
+			pfx.push(_pr);
 	}
 
 	return pfx;
 }
-
-function listStringPrefixes() {
-	if (!_isSupported()) return null;
-
-	var keys = Object.keys(localStorage);
-	var pfx = [], pr;
-
-	for (let i = 0; i < totalStorage; i += 1) {
-		pr = keys[i].substring(0, keys[i].indexOf("."));
-
-		if (!pfx.includes(pr)) pfx.push(pr);
-	}
-
-	pr = "\n";
-
-	for (let i = 0; i < pfx.length; i += 1)
-		pr += pfx[i] + "\n";
-
-	return pr + "\n";
-}
-
-function getTotalByPrefix(prefix) {
-	if (!_isSupported()) return null;
-
+/**
+ * Remove all data tied to a prefix.
+ * @param {string} prefix
+ * @param {boolean=} isSure
+ */
+function purgeDataByPrefix(prefix, isSure) {
 	if (_verify(prefix)) {
-		prefix = (prefix + ".");
-		var keys = Object.keys(localStorage);
-		var cnt = 0;
+		if (!isSure) 
+			isSure = (window.confirm("Are you sure you want to purge all data of the prefix [" + prefix + "] ?"));
 
-		for(let i = 0; i < keys.length; i += 1)
-			if(keys[i].includes(prefix)) cnt += 1;
+		let amt = this.getAllData(prefix).length;
+		let msg = "Cleared " + amt + " stored item" + ((amt > 0) ? "s." : ".");
 
-		return cnt;
-	}
-}
+		prefix = prefix._fix() + ".";
 
-function purgeData(_isSure) {
-	if (!_isSupported()) return null;
+		if (amt > 0) {
+			let keys = Object.keys(localStorage);
+			let dn = null;
 
-	var msg = ("Cleared " + totalStorage + " stored item");
+			for (let i = 0; i < keys.length; i += 1) {
+				dn = keys[i];
 
-	if (_isSure) {
-		if (totalStorage > 0) {
-			if (totalStorage > 1) msg += "s";
-
-			console.log(msg);
-
-			localStorage.clear();
-			_setTotalStorage();
-		}
-	}
-}
-
-function purgeDataByPrefix(prefix, _isSure) {
-	if (!_isSupported()) return null;
-
-	if (_isSure) {
-		if (_verify(prefix)) {
-			var amt = getTotalByPrefix(prefix);
-			var msg = ("Cleared " + amt + " stored item");
-
-			if (amt > 0) {
-				if (amt > 1) msg += "s";
-
-				prefix += ".";
-
-				var keys = Object.keys(localStorage);
-				var dataName = null;
-
-				console.log(msg);
-
-				for (let i = 0; i < keys.length; i += 1) {
-					dataName = keys[i];
-
-					if(dataName.startsWith(prefix)) {
-						dataName = dataName.substring(prefix.length, dataName.length).trim();
-						removeData(prefix.substring(0, (prefix.length - 1)), dataName);
-					}
+				if (dn.startsWith(prefix)) {
+					dn = dn.substr(prefix.length, dn.length).trim();
+					removeData(prefix.substr(0, prefix.length - 1), dn);
 				}
 			}
+
+			console.warn(msg);
 		}
 	}
 }
 
-/** @deprecated Use _$getSizes() instead. **/
-function getSizes(asNum, disLog) {
-	if (!_isSupported()) return null;
-
-	var _lsTotal = 0, _xLen, _x;
-
-	for (_x in localStorage) {
-		_xLen = ((localStorage[_x].length + _x.length) * 2);
-		_lsTotal += _xLen;
-
-		if (disLog) console.log(_x.substr(0, 50) + " = " + (_xLen / 1024).toFixed(2) + " KB");
-	}
-
-	return (asNum) ? Number.parseFloat(((_lsTotal / 1024)).toFixed(2)) : ((_lsTotal / 1024)).toFixed(2) + " KB";
-}
-
-function _$getSizes(asNum, putKB) {
-	if (!_isSupported()) return null;
-
-	let _sizes = []; // [Prefix, SizeKB]
-	let _s = 0;
-
-	for (let i = 0; i < listPrefixes().length; i += 1)
-		_sizes.push([listPrefixes()[i], parseFloat(getSizeByPrefix(listPrefixes()[i]).substr(0, getSizeByPrefix(listPrefixes()[i]).indexOf(" KB")))]);
-
-	for (let i = 0; i < _sizes.length; i += 1)
-		_s += _sizes[i][1];
-
-	_s = _s.toFixed(2);
-
-	return (asNum) ? parseFloat(_s) : _s + ((putKB) ? " KB" : "");
-}
-
-function getSizeByPrefix(prefix, asNum) {
-	if (!_isSupported()) return null;
-
+/**
+ * Gets size (in KB) of prefix's Local Storage.
+ * @param {string} prefix
+ * @param {boolean=} asNum
+ * @param {boolean=} putKB
+ * @return {number}
+ */
+function getSizeByPrefix(prefix, asNum, putKB) {
 	if (_verify(prefix)) {
-		var _lsTotal = 0, _xLen, _x, _sums = [], _sum = 0;
+		let _ls = 0, _xl = 0, _x = null, _sums = [], _sum = 0;
+		prefix = prefix._fix() + ".";
 
 		for (_x in localStorage) {
 			if (_x.startsWith(prefix)) {
-				_xLen = ((localStorage[_x].length + _x.length) * 2);
-				_lsTotal += _xLen;
-
-				_sums.push((_xLen / 1024).toFixed(2));
+				_xl = (localStorage[_x].length + _x.length) * 2;
+				_ls += _xl;
+				_sums.push((_xl / 1024).toFixed(2));
 			}
 		}
 
 		for (let i = 0; i < _sums.length; i += 1)
-			_sum += Number.parseFloat(_sums[i]);
+			_sum += parseFloat(_sums[i]);
 
-		return (asNum) ? Number.parseFloat(_sum.toFixed(2)) : _sum.toFixed(2) + " KB";
+		_sum = _sum.toFixed(2);
+
+		return (asNum) ? parseFloat(_sum) : _sum + ((putKB) ? " KB" : "");
 	}
 }
 
-function _$createTestStorage(n) {
-	var _s = 0, _cur = Number.parseInt(listValuesByPrefix(pf)[listValuesByPrefix(pf).length - 1]);
+/**
+ * Gets size of all prefix's Local Storage (in KB).
+ * @param {boolean=} asNum
+ * @param {boolean=} putKB
+ * @return {number}
+ */
+function getTotalSize(asNum, putKB) {
+	let pfx = this.getPrefixes();
+	let s = 0;
 
-	if (n == undefined || n < 0) n = 30;
-	if (n > 400) n = 400;
-	if (isNaN(_cur)) _cur = 0;
+	for (let i = 0; i < pfx.length; i += 1)
+		s += this.getSizeByPrefix(pfx[i], true, false);
 
-	for (let i = 1; i < n + 1; i += 1) {
-		storeData("LS_TEST", "TEST-" + (_cur + 1), _cur);
-
-		_cur += 1;
-		_s += 1;
-	}
-
-	console.log("Created " + _s + " Test Storages");
-}
-
-function _$purgeTestStorage(_b) {
-	purgeDataByPrefix("LS_TEST", _b);
+	return (asNum) ? parseFloat(s) : s + ((putKB) ? " KB" : "");
 }
