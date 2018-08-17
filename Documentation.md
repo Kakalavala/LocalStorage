@@ -113,7 +113,7 @@ getAllData(prefix).length; // returns 2
 Getting **all** data will return an array of the stored data.
 ```
 (2) [Array(2), Array(2)]
-  0: (2) ["SiteA.usernames", "Jeff,Camryn,Charles"]]
+  0: (2) ["SiteA.usernames", "Jeff,Camryn,Charles"]
   1: (2) ["SiteA.current_user", "Shaun"]
   length: 2
 ```
