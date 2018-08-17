@@ -74,4 +74,65 @@ storeData(prefix, "Usernames", users);
 ```
 >> This will store the variable "users" with a data name of "Usernames".
 
+Getting Data
+------------
+There are two methods for getting data. Each has their own usages in practical applications.
 
+```javascript
+getData(prefix, dataName);
+```
+
+> This will return the specific data entry and attempt to translate the data back to it's original type.
+>> This can be used to get specific data.
+
+```javascript
+getAllData(prefix);
+```
+
+> This will return all any data stored to a specific prefix.
+>> This can be used to get the total amount individual data entries exist to that prefix.
+
+```javascript
+getAllData(prefix).length;
+```
+
+>> A better example could be:
+
+```javascript
+var prefix = "SiteA";
+var users = ["Jeff", "Camryn", "Charles"];
+
+storeData(prefix, "usernames", users);
+storeData(prefix, "current_user", "Shaun");
+
+getAllData(prefix).length; // returns 2
+```
+
+Getting **all** data will return an array of the stored data.
+```
+(2) [Array(2), Array(2)]
+  0: (2) ["SiteA.usernames", "Jeff,Camryn,Charles"]]
+  1: (2) ["SiteA.current_user", "Shaun"]
+  length: 2
+```
+> _This is the output from Google Chrome's console._
+>> _**Notice**: The array of strings ["Jeff","Camryn","Charles"] turned into one string; this is normal._
+
+If you wanted to get the current user, using **getAllData()**, you'd do the following:
+```javascript
+getAllData(prefix)[1];
+```
+> This returns the array:
+```
+(2) ["SiteA.current_user", "Shaun"]
+  0: "SiteA.current_user"
+  1: "Shaun"
+  length: 2
+```
+> _This is the output from Google Chrome's console._
+
+Getting the actual name is done in a similar process:
+```javascript
+getAllData(prefix)[1][1];
+```
+> This returns "Shaun".
