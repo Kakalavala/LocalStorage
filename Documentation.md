@@ -79,8 +79,10 @@ Getting Data
 There are two methods for getting data. Each has their own usages in practical applications.
 
 ```javascript
-getData(prefix, dataName);
+getData(prefix, dataName, asArray);
 ```
+>>> Where "asArray" is an optional boolean value determining if the data will be returned as an array.
+>>> This is useful when you original store the data as an array.
 
 > This will return the specific data entry and attempt to translate the data back to it's original type.
 >> This can be used to get specific data.
