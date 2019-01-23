@@ -21,7 +21,7 @@ It's good practice to define the prefix variable within the first couple lines o
 An example of how to use/create prefixes, can be shown in the following example:
 
 ```javascript
-var prefix = "SiteA";
+const prefix = "SiteA";
 ```
 This will set the prefix so it's easier to call back later. (This will keep up consistancy throughout your website.)
 
@@ -34,8 +34,8 @@ A data name is exactly as it sounds, it's the name assigned to that particular d
 *(Note: names are caps-sensitive, so remember that when naming data.)*
 >For example, lets say you're storing an username:
 ```javascript
-var prefix = "SiteA";
-var username = "Camryn";
+const prefix = "SiteA";
+let username = "Camryn";
 ```
 >> This sets the prefix to be "SiteA" and the username to be "Camryn".
 
@@ -67,8 +67,8 @@ storeData(prefix, dataName, data);
 Lets use the previous example of storing usernames again:
 
 ```javascript
-var prefix = "SiteA";
-var users = ["Jeff", "Camryn", "Charles"];
+const prefix = "SiteA";
+let users = ["Jeff", "Camryn", "Charles"];
 
 storeData(prefix, "Usernames", users);
 ```
@@ -101,8 +101,8 @@ getAllData(prefix).length;
 >> A better example could be:
 
 ```javascript
-var prefix = "SiteA";
-var users = ["Jeff", "Camryn", "Charles"];
+const prefix = "SiteA";
+let users = ["Jeff", "Camryn", "Charles"];
 
 storeData(prefix, "usernames", users);
 storeData(prefix, "current_user", "Shaun");
